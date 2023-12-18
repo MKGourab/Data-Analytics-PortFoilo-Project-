@@ -128,10 +128,8 @@ project_root/
 ## Output is as shown below:
 ### Homepage:
 
-
-### User Inputing:
-
+![Screenshot_2](https://github.com/MKGourab/Mushroom_Classification/assets/104300031/9aa66f56-3a72-4fd1-a37c-8b3b342cf5fd)
 
 ### Results:
 
-
+![Screenshot_4](https://github.com/MKGourab/Mushroom_Classification/assets/104300031/11a88e75-480e-449b-a0a2-1a187a9b98dd)
