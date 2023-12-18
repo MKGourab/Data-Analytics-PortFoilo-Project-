@@ -1,13 +1,9 @@
 import os
 import sys
 import pickle
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, precision_recall_fscore_support
+from sklearn.metrics import accuracy_score,confusion_matrix,classification_report
 from src.exception import CustomException
 from src.logger import logging
-
-import warnings
-warnings.filterwarnings("ignore")
-
 
 def save_object(file_path, obj):
     try:
@@ -26,22 +22,22 @@ def evaluate_model(X_train,y_train,X_test,y_test,models):
         results = {}
 
         for model_name, model in models.items():
-            model.fit(X_train, y_train)
-            y_pred = model.predict(X_test)
+            # Convert sparse matrices to dense arrays
+            X_train_dense = X_train.toarray() if hasattr(X_train, 'toarray') else X_train
+            X_test_dense = X_test.toarray() if hasattr(X_test, 'toarray') else X_test
+
+        for model_name, model in models.items():
+            model.fit(X_train_dense, y_train)
+            y_pred = model.predict(X_test_dense)
             accuracy = accuracy_score(y_test, y_pred)
-            class_report = classification_report(y_test, y_pred, zero_division=1)
-            confusion_mat = confusion_matrix(y_test, y_pred)
-            
-            # Calculate precision, recall, and f1 for each class
-            precision, recall, f1, _ = precision_recall_fscore_support(y_test, y_pred, average='weighted')
+            classification_rep = classification_report(y_test, y_pred)
+            conf_matrix = confusion_matrix(y_test, y_pred)
 
             results[model_name] = {
-                'accuracy': accuracy * 100,
-                'confusion_matrix': confusion_mat,
-                'classification_report': class_report,
-                'precision': precision,
-                'recall': recall,
-                'f1': f1
+                'model': model,
+                'accuracy': accuracy*100,
+                'classification_report': classification_rep,
+                'confusion_matrix': conf_matrix
             }
 
         return results

@@ -1,5 +1,3 @@
-import numpy as np
-import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
@@ -10,6 +8,7 @@ from src.exception import CustomException
 from src.logger import logging
 from src.utils import save_object
 from src.utils import evaluate_model
+
 from dataclasses import dataclass
 import sys
 import os
@@ -23,17 +22,15 @@ class ModelTrainer:
     def __init__(self):
         self.model_trainer_config = ModelTrainerConfig()
 
-    def initate_model_training(self,train_array,test_array):
+    def initate_model_training(self,input_feature_train_arr,target_train_arr,input_feature_test_arr,target_test_arr,):
         try:
             logging.info('Splitting Dependent and Independent variables from train and test data')
             X_train, y_train, X_test, y_test = (
-                train_array[:, 1:],          
-                train_array[:, 0],          
-                test_array[:, 1:],          
-                test_array[:, 0]             
+                input_feature_train_arr,
+                target_train_arr,
+                input_feature_test_arr,
+                target_test_arr,
             )
-
-
 
             models={'Logistic Regression': LogisticRegression(max_iter=1000),
                     'Random Forest': RandomForestClassifier(),
@@ -45,7 +42,7 @@ class ModelTrainer:
                     'AdaBoost': AdaBoostClassifier(n_estimators= 501),
                     'Gradient Boosting':GradientBoostingClassifier(max_depth= 3, n_estimators= 500)
                     }
-            
+            #print(y_train)
             model_results = evaluate_model(X_train, y_train, X_test, y_test, models)
 
             best_model_name = max(model_results, key=lambda k: model_results[k]['accuracy'])

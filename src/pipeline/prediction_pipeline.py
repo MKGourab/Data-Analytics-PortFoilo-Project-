@@ -9,7 +9,6 @@ import pandas as pd
 class PredictPipeline:
     def __init__(self):
         pass
-
     def predict(self,features):
         try:
             preprocessor_path=os.path.join('artifacts','preprocessor.pkl')
@@ -27,24 +26,25 @@ class PredictPipeline:
         except Exception as e:
             logging.info("Exception occured in prediction")
             raise CustomException(e,sys)
+
      
 class CustomData:
     def __init__(self,
-                cap_shape: str,
-                cap_surface: str,
-                cap_color: str,
-                bruises: str,
-                odor: str,
-                gill_attachment: str,
-                gill_spacing: str,
-                gill_size: str,
+                 cap_shape: str,
+                 cap_surface: str,
+                 cap_color: str,
+                 bruises: str,
+                 odor: str,
+                 gill_attachment: str,
+                 gill_spacing: str,
+                 gill_size: str,
                  gill_color: str,
                  stalk_shape: str,
                  stalk_root: str,
                  stalk_surface_above_ring: str,
                  stalk_surface_below_ring: str,
                  stalk_color_above_ring: str,
-                 stalk_color_below_ring: str,                
+                 stalk_color_below_ring: str,
                  veil_color: str,
                  ring_number: str,
                  ring_type: str,
@@ -67,13 +67,14 @@ class CustomData:
         self.stalk_surface_above_ring = stalk_surface_above_ring
         self.stalk_surface_below_ring = stalk_surface_below_ring
         self.stalk_color_above_ring = stalk_color_above_ring
-        self.stalk_color_below_ring = stalk_color_below_ring        
+        self.stalk_color_below_ring = stalk_color_below_ring
         self.veil_color = veil_color
         self.ring_number = ring_number
         self.ring_type = ring_type
         self.spore_print_color = spore_print_color
         self.population = population
-        self.habitat = habitat     
+        self.habitat = habitat
+      
 
 
     def get_data_as_dataframe(self):
@@ -93,7 +94,7 @@ class CustomData:
                     'stalk_surface_above_ring': [self.stalk_surface_above_ring],
                     'stalk_surface_below_ring': [self.stalk_surface_below_ring],
                     'stalk_color_above_ring': [self.stalk_color_above_ring],
-                    'stalk_color_below_ring': [self.stalk_color_below_ring],                    
+                    'stalk_color_below_ring': [self.stalk_color_below_ring],
                     'veil_color': [self.veil_color],
                     'ring_number': [self.ring_number],
                     'ring_type': [self.ring_type],
@@ -101,6 +102,8 @@ class CustomData:
                     'population': [self.population],
                     'habitat': [self.habitat]
                 }
+
+
             df = pd.DataFrame(custom_data_input_dict)
             logging.info('Dataframe Gathered')
             return df

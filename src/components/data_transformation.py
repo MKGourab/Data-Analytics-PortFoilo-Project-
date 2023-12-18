@@ -2,8 +2,9 @@ import sys
 from dataclasses import dataclass
 import numpy as np 
 import pandas as pd
-from sklearn.preprocessing import OneHotEncoder, LabelEncoder
-from sklearn.compose import ColumnTransformer 
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder,StandardScaler,LabelEncoder
 from src.exception import CustomException
 from src.logger import logging
 import os
@@ -20,32 +21,38 @@ class DataTransformation:
     def get_data_transformation_object(self):
         try:
             logging.info('Data Transformation initiated')
+            # Define which columns should be ordinal-encoded and which should be scaled
+            categorical_cols = ['cap_shape', 'cap_surface', 'cap_color', 'bruises', 'odor',
+                                'gill_attachment', 'gill_spacing', 'gill_size', 'gill_color',
+                                'stalk_shape', 'stalk_root', 'stalk_surface_above_ring',
+                                'stalk_surface_below_ring', 'stalk_color_above_ring',
+                                'stalk_color_below_ring', 'veil_color', 'ring_number', 'ring_type',
+                                'spore_print_color', 'population', 'habitat']
+            
+            
+            # Define the custom ranking for each ordinal variable
 
-            # Define transformers for categorical and numerical columns
-            categorical_features = [
-                'cap_shape', 'cap_surface', 'cap_color', 'bruises', 'odor',
-                'gill_attachment', 'gill_spacing', 'gill_size', 'gill_color',
-                'stalk_shape', 'stalk_root', 'stalk_surface_above_ring',
-                'stalk_surface_below_ring', 'stalk_color_above_ring',
-                'stalk_color_below_ring', 'veil_color', 'ring_number',
-                'ring_type', 'spore_print_color', 'population', 'habitat'
+            cat_pipeline = Pipeline(
+                steps=[
+                    ("one_hot_encoder", OneHotEncoder()),
+                    ("Scaler", StandardScaler(with_mean=False))
                 ]
+            )
 
-            categorical_transformer = OneHotEncoder(sparse=False, drop='first')
+            logging.info(f"feature columns name: {categorical_cols}")
 
-            # Combine transformers for all features
-            preprocessor = ColumnTransformer(
-                transformers=[
-                    ('cat', categorical_transformer, categorical_features)
-                ])
-
-            return preprocessor
+            preprocessor=ColumnTransformer([
+            ('cat_pipeline',cat_pipeline,categorical_cols)
+            ])
+            logging.info('Data Transformation Completed')
+            
+            return preprocessor          
 
         except Exception as e:
-            logging.error("Error in Data Transformation")
-            raise CustomException(e, sys)
+            logging.info("Error in Data Trnasformation")
+            raise CustomException(e,sys)
         
-    def initaite_data_transformation(self, train_path, test_path):
+    def initaite_data_transformation(self,train_path,test_path):
         try:
             # Reading train and test data
             train_df = pd.read_csv(train_path)
@@ -61,42 +68,39 @@ class DataTransformation:
             target_column_name = 'class'
             drop_columns = [target_column_name]
 
-            input_feature_train_df = train_df.drop(columns=drop_columns, axis=1)
-            target_feature_train_df = train_df[target_column_name]
+            input_feature_train_df = train_df.drop(columns=drop_columns,axis=1)
+            target_feature_train_df=train_df[target_column_name]
 
-            input_feature_test_df = test_df.drop(columns=drop_columns, axis=1)
-            target_feature_test_df = test_df[target_column_name]
+            input_feature_test_df=test_df.drop(columns=drop_columns,axis=1)
+            target_feature_test_df=test_df[target_column_name]
 
-            # Transform using the preprocessor object
-            logging.info("Applying preprocessing object on training and testing datasets.")
+            logging.info("applying preprocessor object to train and test input features")
+            
+            ## Trnasformating using preprocessor obj
+            input_feature_train_arr=preprocessing_obj.fit_transform(input_feature_train_df)
+            input_feature_test_arr=preprocessing_obj.transform(input_feature_test_df)
 
-            # Print debug information
-            logging.info(f"Columns in input_feature_train_df: {input_feature_train_df.columns}")
-            input_feature_train_arr = preprocessing_obj.fit_transform(input_feature_train_df)
-            input_feature_test_arr = preprocessing_obj.transform(input_feature_test_df)
+            logging.info("Applying label encoder to target data")
 
             le = LabelEncoder()
-            target_feature_train_arr = le.fit_transform(target_feature_train_df)
-            target_feature_test_arr = le.transform(target_feature_test_df)
-          
-            logging.info("Applying preprocessing object on training and testing datasets.")
-
-            train_arr = np.c_[np.array(target_feature_train_arr), input_feature_train_arr]
-            test_arr = np.c_[np.array(target_feature_test_arr), input_feature_test_arr]
-
+            
+            target_train_arr = le.fit_transform(target_feature_train_df)
+            target_test_arr = le.transform(target_feature_test_df)
 
             save_object(
                 file_path=self.data_transformation_config.preprocessor_obj_file_path,
                 obj=preprocessing_obj
-            )
+                )
             logging.info('Preprocessor pickle file saved')
 
             return (
-                train_arr,
-                test_arr,
-                self.data_transformation_config.preprocessor_obj_file_path,
+                input_feature_train_arr,
+                target_train_arr,
+                input_feature_test_arr,
+                target_test_arr,
+                self.data_transformation_config.preprocessor_obj_file_path
             )
-
+            
         except Exception as e:
-            logging.info("Exception occurred in the initiate_datatransformation")
-            raise CustomException(e, sys)
+            logging.info("Exception occured in the initiate_datatransformation")
+            raise CustomException(e,sys)
